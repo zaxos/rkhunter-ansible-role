@@ -1,0 +1,21 @@
+---
+# tasks file for rkhunter-ansible-role
+
+- include: install.yml
+  when: ansible_os_family == "RedHat"
+  register: installed
+
+- name: Configure rkhunter.conf
+  template: src=rkhunter.conf.j2 dest=/etc/rkhunter.conf
+
+- name: Configure sysconfig/rkhunter
+  template: src=rkhunter.j2 dest=/etc/sysconfig/rkhunter
+
+- name: rkhunter update
+  command: rkhunter --update
+  failed_when: False
+  changed_when: False
+
+- name: rkhunter propupd
+  command: rkhunter --propupd
+  changed_when: False

@@ -1,0 +1,13 @@
+---
+# defaults file for rkhunter-ansible-role
+
+rkhunter_report_mail_address: "root@localhost"
+rkhunter_diag_scan: "no"
+rkhunter_allow_ssh_protocol_v1: 0
+rkhunter_allow_ssh_root_login: "no"
+
+rkhunter_warning_mail_address: "\"\""
+rkhunter_rotate_mirrors: 1
+rkhunter_update_mirrors: 1
+rkhunter_mirrors_mode: 0
+rkhunter_append_log: 1

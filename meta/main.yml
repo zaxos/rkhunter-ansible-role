@@ -1,0 +1,16 @@
+galaxy_info:
+  author: zaxos
+  description: Ansible role to install and configure Rootkit Hunter
+
+  license: GPLv2
+
+  min_ansible_version: 1.2
+
+  platforms:
+  - name: EL
+    versions:
+    - 7
+
+  galaxy_tags: [rootkit,hunter,security]
+
+dependencies: []
