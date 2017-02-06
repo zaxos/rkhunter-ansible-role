@@ -27,7 +27,7 @@ Example Playbook
 Role Variables
 --------------
 Some variables that require review:
-- `rkhunter_report_mail_address`: "root@localhost"   
+- `rkhunter_report_mail_address`: "root@localhost"  
 - `rkhunter_diag_scan`: "no"   
 Set this variable to "no" in order to perform normal report scan or to "yes" in order to perform detailed report scan (including application check)
 - `rkhunter_allow_ssh_protocol_v1`: 0   
