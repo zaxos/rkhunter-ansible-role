@@ -9,7 +9,6 @@ Requirements
 ------------
 * centos/rhel 7  
 * ansible >=1.2
-* selinux disabled
 
 Installation
 ------------
