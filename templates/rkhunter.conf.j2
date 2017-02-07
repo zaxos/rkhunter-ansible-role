@@ -141,7 +141,7 @@ MAIL-ON-WARNING={{ rkhunter_warning_mail_address }}
 # The default is to use the 'mail' command, with a subject line
 # of '[rkhunter] Warnings found for ${HOST_NAME}'.
 #
-MAIL_CMD=mail -s "[rkhunter] Warnings found for ${HOST_NAME}"
+MAIL_CMD={{ rkhunter_send_mail_command }}
 
 #
 # This option specifies the directory to use for temporary files.

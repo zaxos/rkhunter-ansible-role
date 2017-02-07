@@ -7,6 +7,7 @@ rkhunter_allow_ssh_protocol_v1: 0
 rkhunter_allow_ssh_root_login: "no"
 
 rkhunter_warning_mail_address: "\"\""
+rkhunter_send_mail_command: "mail -s \"[rkhunter] Warnings found for ${HOST_NAME}\""
 rkhunter_rotate_mirrors: 1
 rkhunter_update_mirrors: 1
 rkhunter_mirrors_mode: 0
