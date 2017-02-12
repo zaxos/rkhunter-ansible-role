@@ -6,14 +6,19 @@
   register: installed
 
 - name: Configure rkhunter.conf
-  template: src=rkhunter.conf.j2 dest=/etc/rkhunter.conf
+  template:
+    src: rkhunter.conf.j2
+    dest: /etc/rkhunter.conf
 
 - name: Configure sysconfig/rkhunter
-  template: src=rkhunter.j2 dest=/etc/sysconfig/rkhunter
+  template:
+    src: rkhunter.j2
+    dest: /etc/sysconfig/rkhunter
 
 - name: rkhunter update
   command: rkhunter --update
-  failed_when: False
+  register: rkhunter_update
+  failed_when: rkhunter_update.rc != 2 and rkhunter_update.rc != 0
   changed_when: False
 
 - name: rkhunter propupd

@@ -1,7 +1,8 @@
 [![Build Status](https://travis-ci.org/zaxos/rkhunter-ansible-role.svg?branch=master)](https://travis-ci.org/zaxos/rkhunter-ansible-role)
+[![Ansible Galaxy](https://img.shields.io/badge/galaxy-_zaxos.rkhunter--ansible--role-blue.svg)](https://galaxy.ansible.com/zaxos/rkhunter-ansible-role/)
 
 rkhunter-ansible-role
-==================
+=====================
 
 Ansible role to install and configure Rootkit Hunter.
 
