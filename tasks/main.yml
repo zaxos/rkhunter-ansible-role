@@ -14,6 +14,14 @@
     src: rkhunter.j2
     dest: /etc/sysconfig/rkhunter
 
+# By default, on debian, the log file is /var/log/rkhunter.log
+- name: Create logfile directory
+  file:
+    path: '/var/log/rkhunter/'
+    state: 'directory'
+    mode: 0644
+  when: ansible_os_family == "Debian"
+
 - name: rkhunter update
   command: rkhunter --update
   register: rkhunter_update
