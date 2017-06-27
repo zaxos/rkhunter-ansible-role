@@ -8,8 +8,10 @@ Ansible role to install and configure Rootkit Hunter.
 
 Requirements
 ------------
-* centos/rhel 7  
-* ansible >= 1.2
+* OS support list:  
+  * CentOS/RHEL 7
+  * Debian Stretch
+* ansible >= 2.0
 
 Installation
 ------------
