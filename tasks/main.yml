@@ -2,7 +2,6 @@
 # tasks file for rkhunter-ansible-role
 
 - include: install.yml
-  when: ansible_os_family == "RedHat"
   register: installed
 
 - name: Configure rkhunter.conf
