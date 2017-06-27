@@ -426,7 +426,9 @@ DISABLE_TESTS=suspscan hidden_ports deleted_files packet_cap_apps apps
 # Also see the PKGMGR_NO_VRFY and USE_SUNSUM options.
 #
 #PKGMGR=NONE
+{% if ansible_pkg_mgr == 'yum' %}
 PKGMGR=RPM
+{% endif %}
 
 #
 # It is possible that a file, which is part of a package, may have been
