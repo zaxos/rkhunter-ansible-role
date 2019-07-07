@@ -87,7 +87,7 @@
 #
 # If the mirrors file is read-only, then the '--versioncheck' command-line
 # option can only be used if this option is set to '0'.
-# 
+#
 # The default value is '1'.
 #
 ROTATE_MIRRORS={{ rkhunter_rotate_mirrors }}
@@ -130,7 +130,7 @@ MIRRORS_MODE={{ rkhunter_mirrors_mode }}
 #
 # Also see the MAIL_CMD option.
 #
-MAIL-ON-WARNING={{ rkhunter_warning_mail_address }}
+MAIL-ON-WARNING={{ rkhunter_mail_warning }}
 
 #
 # This option specifies the mail command to use if MAIL-ON-WARNING is set.
@@ -141,7 +141,7 @@ MAIL-ON-WARNING={{ rkhunter_warning_mail_address }}
 # The default is to use the 'mail' command, with a subject line
 # of '[rkhunter] Warnings found for ${HOST_NAME}'.
 #
-MAIL_CMD={{ rkhunter_send_mail_command }}
+MAIL_CMD={{ rkhunter_mail_cmd }}
 
 #
 # This option specifies the directory to use for temporary files.
@@ -239,7 +239,7 @@ LOGFILE=/var/log/rkhunter/rkhunter.log
 #
 # The default value is '0'.
 #
-APPEND_LOG={{ rkhunter_append_log }}
+APPEND_LOG=1
 
 #
 # Set the following option to '1' if the log file is to be copied when rkhunter
@@ -305,7 +305,7 @@ AUTO_X_DETECT=1
 #
 # The default value is 'no'.
 #
-ALLOW_SSH_ROOT_USER={{ rkhunter_allow_ssh_root_login }}
+ALLOW_SSH_ROOT_USER={{ rkhunter_allow_ssh_root }}
 
 
 #
@@ -320,7 +320,7 @@ ALLOW_SSH_ROOT_USER={{ rkhunter_allow_ssh_root_login }}
 #
 # The default value is '0'.
 #
-ALLOW_SSH_PROT_V1={{ rkhunter_allow_ssh_protocol_v1 }}
+ALLOW_SSH_PROT_V1={{ rkhunter_allow_ssh_v1 }}
 
 #
 # This setting tells rkhunter the directory containing the SSH configuration
@@ -426,9 +426,6 @@ DISABLE_TESTS=suspscan hidden_ports deleted_files packet_cap_apps apps
 # Also see the PKGMGR_NO_VRFY and USE_SUNSUM options.
 #
 #PKGMGR=NONE
-{% if ansible_pkg_mgr == 'yum' %}
-PKGMGR=RPM
-{% endif %}
 
 #
 # It is possible that a file, which is part of a package, may have been
@@ -646,7 +643,7 @@ ALLOWHIDDENDIR=/etc/.bzr
 # This option may be specified more than once, and may use wildcard characters.
 #
 # The default value is the null string.
-# 
+#
 #ALLOWHIDDENFILE=/usr/share/man/man1/..1.gz
 #ALLOWHIDDENFILE=/usr/bin/.fipscheck.hmac
 #ALLOWHIDDENFILE=/usr/bin/.ssh.hmac
@@ -909,7 +906,7 @@ ALLOWDEVFILE=/dev/shm/squid-cf*
 #
 #APP_WHITELIST=""
 
-# 
+#
 # Set this option to scan for suspicious files in directories which pose a
 # relatively higher risk due to user write access.
 #
@@ -920,7 +917,7 @@ ALLOWDEVFILE=/dev/shm/squid-cf*
 #
 # Please consider adding all directories the user the (web)server runs as,
 # and has write access to, including the document root (e.g: '/var/www') and
-# log directories (e.g: '/var/log/httpd'). 
+# log directories (e.g: '/var/log/httpd').
 #
 # This is a space-separated list of directory pathnames. The option may be
 # specified more than once.
@@ -958,7 +955,7 @@ ALLOWDEVFILE=/dev/shm/squid-cf*
 
 #
 # The following options can be used to whitelist network ports which are known
-# to have been used by malware. 
+# to have been used by malware.
 #
 # The PORT_WHITELIST option is a space-separated list of one or more of two
 # types of whitelisting. These are:
@@ -1213,10 +1210,10 @@ RTKT_FILE_WHITELIST=/var/log/pki/pki-tomcat/ca/system
 #
 # You should only activate this feature as part of a more thorough
 # investigation, which should be based on relevant best practices and
-# procedures. 
+# procedures.
 #
 # Enabling this feature implies you have the knowledge to interpret the
-# results properly. 
+# results properly.
 #
 # The default value is the null string.
 #
