@@ -1,17 +1,14 @@
 ---
-# defaults file for rkhunter-ansible-role
-
-rkhunter_report_mail_address: "root@localhost"
-rkhunter_diag_scan: "no"
-rkhunter_allow_ssh_protocol_v1: 0
-rkhunter_allow_ssh_root_login: "no"
-
-rkhunter_warning_mail_address: "\"\""
-rkhunter_send_mail_command: "mail -s \"[rkhunter] Warnings found for ${HOST_NAME}\""
+# defaults file for rkhunter
+rkhunter_cron_daily_run: 'true'
+rkhunter_cron_db_update: 'true'
+rkhunter_db_update_email: 'true'
+rkhunter_report_email: 'root'
+rkhunter_apt_autogen: 'TRUE'
 rkhunter_rotate_mirrors: 1
 rkhunter_update_mirrors: 1
 rkhunter_mirrors_mode: 0
-rkhunter_append_log: 1
-
-epel_url: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm"
-epel_key: "/etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7"
+rkhunter_mail_warning: 'root@localhost'
+rkhunter_mail_cmd: 'mail -s "[rkhunter] Warnings found for ${HOST_NAME}"'
+rkhunter_allow_ssh_root: 'no'
+rkhunter_allow_ssh_v1: 0

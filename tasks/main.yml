@@ -9,10 +9,28 @@
     src: rkhunter.conf.j2
     dest: /etc/rkhunter.conf
 
+- name: Check if sysconfig folder exists
+  stat:
+    path: /etc/sysconfig
+  register: sysconfig
+
 - name: Configure sysconfig/rkhunter
   template:
     src: rkhunter.j2
     dest: /etc/sysconfig/rkhunter
+  when: sysconfig.stat.exists and sysconfig.stat.isdir
+
+- name: Check if default folder exists
+  stat:
+    path: /etc/default
+  register: default
+
+- name: Configure default/rkhunter
+  template:
+    src: rkhunter.j2
+    dest: /etc/default/rkhunter
+  when: default.stat.exists and default.stat.isdir
+
 
 # By default, on debian, the log file is /var/log/rkhunter.log
 - name: Create logfile directory
