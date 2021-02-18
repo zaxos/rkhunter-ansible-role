@@ -225,7 +225,7 @@ SCRIPTDIR=/usr/share/rkhunter/scripts
 # The default value is the null string, indicating that all the language files
 # will be updated.
 #
-#UPDATE_LANG=""
+UPDATE_LANG="{{ rkhunter_update_languages if rkhunter_update_languages != "" else ""}}"
 
 #
 # This option specifies the log file pathname. The file will be created if it
