@@ -11,8 +11,15 @@
 
 - name: Configure sysconfig/rkhunter
   template:
-    src: rkhunter.j2
+    src: rkhunter-redhat-sysconfig.j2
     dest: /etc/sysconfig/rkhunter
+  when: ansible_os_family == "RedHat"
+
+- name: Configure defaults/rkhunter
+  template:
+    src: rkhunter-debian-defaults.j2
+    dest: /etc/default/rkhunter
+  when: ansible_os_family == "Debian"
 
 # By default, on debian, the log file is /var/log/rkhunter.log
 - name: Create logfile directory
