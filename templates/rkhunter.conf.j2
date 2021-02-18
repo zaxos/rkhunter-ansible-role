@@ -444,7 +444,7 @@ DISABLE_TESTS=suspscan hidden_ports deleted_files packet_cap_apps apps ipc_share
 # Also see the PKGMGR_NO_VRFY and USE_SUNSUM options.
 #
 #PKGMGR=NONE
-{% if ansible_pkg_mgr == 'yum' %}
+{% if ansible_os_family == 'RedHat' %}
 PKGMGR=RPM
 {% endif %}
 
