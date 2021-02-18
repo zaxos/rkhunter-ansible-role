@@ -3,14 +3,14 @@
     name: "{{ epel_url }}"
     state: present
   when: >
-    ansible_distribution == "RedHat" or 
+    ansible_distribution == "RedHat" or
     ansible_distribution == "CentOS"
 
 - name: Add epel repository signing key
   rpm_key:
     key: "{{ epel_key }}"
   when: >
-    ansible_distribution == "RedHat" or 
+    ansible_distribution == "RedHat" or
     ansible_distribution == "CentOS"
 
 - name: Install rkhunter
