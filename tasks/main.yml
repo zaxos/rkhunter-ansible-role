@@ -8,11 +8,21 @@
   template:
     src: rkhunter.conf.j2
     dest: /etc/rkhunter.conf
+    mode: 0640
 
 - name: Configure sysconfig/rkhunter
   template:
-    src: rkhunter.j2
+    src: rkhunter-redhat-sysconfig.j2
     dest: /etc/sysconfig/rkhunter
+    mode: 0640
+  when: ansible_os_family == "RedHat"
+
+- name: Configure defaults/rkhunter
+  template:
+    src: rkhunter-debian-defaults.j2
+    dest: /etc/default/rkhunter
+    mode: 0644
+  when: ansible_os_family == "Debian"
 
 # By default, on debian, the log file is /var/log/rkhunter.log
 - name: Create logfile directory
@@ -23,11 +33,15 @@
   when: ansible_os_family == "Debian"
 
 - name: rkhunter update
-  command: rkhunter --update
+  command:
+    cmd: rkhunter --update
+    creates: /var/lib/rkhunter/db/programs_bad.dat
   register: rkhunter_update
-  failed_when: rkhunter_update.rc != 2 and rkhunter_update.rc != 0
-  changed_when: False
+  failed_when: rkhunter_update.rc == 1
+  changed_when: rkhunter_update.rc == 2
 
 - name: rkhunter propupd
-  command: rkhunter --propupd
-  changed_when: False
+  command:
+    cmd: rkhunter --propupd
+    creates: /var/lib/rkhunter/db/rkhunter.dat
+  changed_when: false

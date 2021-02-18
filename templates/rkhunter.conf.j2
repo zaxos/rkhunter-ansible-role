@@ -14,8 +14,8 @@
 # been made.
 #
 # Please review the documentation before posting bug reports or questions.
-# To report bugs, obtain updates, or provide patches or comments, please go
-# to: http://rkhunter.sourceforge.net
+# To report bugs, provide patches or comments, please go to:
+# http://rkhunter.sourceforge.net
 #
 # To ask questions about rkhunter, please use the 'rkhunter-users' mailing list.
 # Note that this is a moderated list, so please subscribe before posting.
@@ -50,7 +50,8 @@
 # should be configured with one entry per line as in the first example.
 #
 # If wildcard characters (globbing) are allowed for an option, then the
-# text describing the option will say so.
+# text describing the option will say so. Any globbing character explicitly
+# required in a pathname should be escaped.
 #
 # Space-separated lists may be enclosed by quotes, although they are not
 # required. If they are used, then they must only appear at the start and
@@ -69,7 +70,9 @@
 # If a configuration option is never set, then the program will assume a
 # default value. The text describing the option will state the default value.
 # If there is no default, then rkhunter will calculate a value or pathname
-# to use.
+# to use. If a value is set for a configuration option, then the default
+# value is ignored. If it is wished to keep the default value, as well as
+# any other set value, then the default must be explicitly set.
 #
 
 
@@ -154,8 +157,11 @@ MAIL_CMD={{ rkhunter_send_mail_command }}
 # subsequently commented out or removed, then the program will assume a
 # default directory beneath the installation directory.
 #
-#TMPDIR=/var/lib/rkhunter/tmp
+{% if ansible_distribution == 'Debian' %}
+TMPDIR=/var/lib/rkhunter/tmp
+{% else %}
 TMPDIR=/var/lib/rkhunter
+{% endif %}
 
 #
 # This option specifies the database directory to use.
@@ -172,7 +178,6 @@ DBDIR=/var/lib/rkhunter/db
 # The installer program will set the default directory. If this default is
 # subsequently commented out or removed, then the program will not run.
 #
-#SCRIPTDIR=/usr/local/lib/rkhunter/scripts
 SCRIPTDIR=/usr/share/rkhunter/scripts
 
 #
@@ -220,7 +225,7 @@ SCRIPTDIR=/usr/share/rkhunter/scripts
 # The default value is the null string, indicating that all the language files
 # will be updated.
 #
-#UPDATE_LANG=""
+UPDATE_LANG="{{ rkhunter_update_languages if rkhunter_update_languages != "" else ""}}"
 
 #
 # This option specifies the log file pathname. The file will be created if it
@@ -324,8 +329,8 @@ ALLOW_SSH_PROT_V1={{ rkhunter_allow_ssh_protocol_v1 }}
 
 #
 # This setting tells rkhunter the directory containing the SSH configuration
-# file. This setting will be worked out by rkhunter, and so should not
-# usually need to be set.
+# file. If unset, this setting will be worked out by rkhunter, and so should
+# not usually need to be set.
 #
 # This option has no default value.
 #
@@ -353,8 +358,11 @@ ALLOW_SSH_PROT_V1={{ rkhunter_allow_ssh_protocol_v1 }}
 # program defaults.
 #
 ENABLE_TESTS=ALL
-#DISABLE_TESTS=suspscan hidden_ports hidden_procs deleted_files packet_cap_apps
-DISABLE_TESTS=suspscan hidden_ports deleted_files packet_cap_apps apps
+{% if ansible_distribution == 'Debian' %}
+DISABLE_TESTS=suspscan hidden_ports hidden_procs deleted_files packet_cap_apps apps
+{% else %}
+DISABLE_TESTS=suspscan hidden_ports deleted_files packet_cap_apps apps ipc_shared_mem
+{% endif %}
 
 #
 # The HASH_CMD option can be used to specify the command to use for the file
@@ -381,11 +389,13 @@ DISABLE_TESTS=suspscan hidden_ports deleted_files packet_cap_apps apps
 #
 # NOTE: Whenever this option is changed 'rkhunter --propupd' must be run.
 #
-# The default value is the SHA1 function, or MD5 if SHA1 cannot be found.
+# The default value is the SHA256 function, unless prelinking is used in
+# which case it defaults to the SHA1 function.
 #
-# Also see the HASH_FLD_IDX option.
+# Also see the HASH_FLD_IDX option. In addition, note the comments under
+# the PKGMGR option relating to the use of HASH_CMD.
 #
-#HASH_CMD=sha1sum
+#HASH_CMD=SHA256
 
 #
 # The HASH_FLD_IDX option specifies which field from the HASH_CMD command
@@ -404,20 +414,28 @@ DISABLE_TESTS=suspscan hidden_ports deleted_files packet_cap_apps apps
 # properties file ('rkhunter.dat'), and when running the file properties check.
 # For RedHat/RPM-based systems, 'RPM' can be used to get information from the
 # RPM database. For Debian-based systems 'DPKG' can be used, for *BSD systems
-# 'BSD' can be used, and for Solaris systems 'SOLARIS' can be used. No value,
-# or a value of 'NONE', indicates that no package manager is to be used.
+# 'BSD' can be used, or for *BSD systems with the 'pkg' command 'BSDng' can be
+# used, and for Solaris systems 'SOLARIS' can be used. No value, or a value of
+# 'NONE', indicates that no package manager is to be used.
 #
-# The current package managers, except 'SOLARIS', store the file hash values
-# using an MD5 hash function. The Solaris package manager includes a checksum
-# value, but this is not used by default (see USE_SUNSUM below).
+# The package managers obtain each file hash value using a hash function. The
+# Solaris package manager includes a 16-bit checksum value, but this is not
+# used by default (see USE_SUNSUM below). The 'RPM' and 'BSDng' package managers
+# currently use a SHA256 hash function. Other package managers will, typically,
+# use an MD5 hash function.
 #
-# The 'DPKG' and 'BSD' package managers only provide MD5 hash values.
-# The 'RPM' package manager additionally provides values for the inode,
-# file permissions, uid, gid and other values. The 'SOLARIS' also provides
-# most of the values, similar to 'RPM', but not the inode number.
+# The 'DPKG', 'BSD' and 'BSDng' package managers only provide a file hash value.
+# The 'RPM' package manager additionally provides values for the inode, file
+# permissions, uid, gid and other values. The 'SOLARIS' package manager also
+# provides most of the values, similar to 'RPM', but not the inode number.
 #
 # For any file not part of a package, rkhunter will revert to using the
-# HASH_CMD hash function instead.
+# HASH_CMD hash function instead. This means that if the HASH_CMD option
+# is set, and PKGMGR is set, then the HASH_CMD hash function is only used,
+# and stored, for non-packaged files. All packaged files will use, and store,
+# whatever hash function the relevant package manager uses. So, for example,
+# with the 'RPM' package manager, packaged files will be stored with their
+# SHA256 value regardless of the value of the HASH_CMD option.
 #
 # NOTE: Whenever this option is changed 'rkhunter --propupd' must be run.
 #
@@ -426,7 +444,7 @@ DISABLE_TESTS=suspscan hidden_ports deleted_files packet_cap_apps apps
 # Also see the PKGMGR_NO_VRFY and USE_SUNSUM options.
 #
 #PKGMGR=NONE
-{% if ansible_pkg_mgr == 'yum' %}
+{% if ansible_os_family == 'RedHat' %}
 PKGMGR=RPM
 {% endif %}
 
@@ -496,6 +514,9 @@ PKGMGR=RPM
 # simple command names.
 # For example, 'top*' cannot be given, but '/usr/bin/top*' is allowed.
 #
+# To extend the use of wildcards to include recursive checking of directories,
+# see the GLOBSTAR configuration option.
+#
 # Specific files may be excluded by using the EXCLUDE_USER_FILEPROP_FILES_DIRS
 # option. Wildcards may be used with this option.
 #
@@ -525,11 +546,8 @@ PKGMGR=RPM
 #USER_FILEPROP_FILES_DIRS=/usr/local/sbin
 #USER_FILEPROP_FILES_DIRS=/etc/rkhunter.conf
 #USER_FILEPROP_FILES_DIRS=/etc/rkhunter.conf.local
-#USER_FILEPROP_FILES_DIRS=/var/lib/rkhunter/db/*
-#USER_FILEPROP_FILES_DIRS=/var/lib/rkhunter/db/i18n/*
+#USER_FILEPROP_FILES_DIRS=/etc/rkhunter.d/*
 #EXCLUDE_USER_FILEPROP_FILES_DIRS=/opt/ps*
-#EXCLUDE_USER_FILEPROP_FILES_DIRS=/var/lib/rkhunter/db/mirrors.dat
-#EXCLUDE_USER_FILEPROP_FILES_DIRS=/var/lib/rkhunter/db/rkhunter*
 
 #
 # This option whitelists files and directories from existing, or not existing,
@@ -546,20 +564,26 @@ PKGMGR=RPM
 # NOTE: The user must take into consideration how often the file will appear
 # and disappear from the system in relation to how often rkhunter is run. If
 # the file appears, and disappears, too often then rkhunter may not notice
-# this. All it will see is that the file has changed. The inode-number and DTM
+# this. All it will see is that the file has changed. The inode number and DTM
 # will certainly be different for each new file, and rkhunter will report this.
 #
 # The default value is the null string.
 #
+{% if ansible_distribution == 'Debian' %}
 #EXISTWHITELIST=""
+{% else %}
 EXISTWHITELIST=/bin/ad
 # FreeIPA Certificate Authority
 EXISTWHITELIST=/var/log/pki-ca/system
 # FreeIPA Certificate Authority
 EXISTWHITELIST=/var/log/pki/pki-tomcat/ca/system
+# FreeIPA with KRA (Password Vault)
+EXISTWHITELIST=/var/log/pki/pki-tomcat/kra/system
+RTKT_FILE_WHITELIST=/var/log/pki/pki-tomcat/kra/system
 # Some non default installed files we check
 EXISTWHITELIST=/usr/bin/GET
 EXISTWHITELIST=/usr/bin/whatis
+{% endif %}
 
 #
 # Whitelist various attributes of the specified file. The attributes are those
@@ -589,13 +613,21 @@ EXISTWHITELIST=/usr/bin/whatis
 #
 # The default value is the null string.
 #
-#SCRIPTWHITELIST=/usr/bin/groups
+{% if ansible_distribution == 'Debian' %}
+SCRIPTWHITELIST=/bin/egrep
+SCRIPTWHITELIST=/bin/fgrep
+SCRIPTWHITELIST=/bin/which
+SCRIPTWHITELIST=/usr/bin/ldd
+#SCRIPTWHITELIST=/usr/bin/lwp-request
+SCRIPTWHITELIST=/usr/sbin/adduser
+#SCRIPTWHITELIST=/usr/sbin/prelink
+#SCRIPTWHITELIST=/usr/sbin/unhide.rb
+{% else %}
 SCRIPTWHITELIST=/usr/bin/whatis
 SCRIPTWHITELIST=/usr/bin/ldd
 SCRIPTWHITELIST=/usr/bin/groups
 SCRIPTWHITELIST=/usr/bin/GET
-SCRIPTWHITELIST=/sbin/ifup
-SCRIPTWHITELIST=/sbin/ifdown
+{% endif %}
 
 #
 # Allow the specified file to have the immutable attribute set.
@@ -616,12 +648,29 @@ SCRIPTWHITELIST=/sbin/ifdown
 #IMMUTABLE_SET=0
 
 #
+# If this option is set to '1', then any changed inode value is ignored in
+# the file properties check. The inode test itself still runs, but it will
+# always return that no inodes have changed.
+#
+# This option may be useful for filesystems such as Btrfs, which handle inodes
+# slightly differently than other filesystems.
+#
+# The default value is '0'.
+#
+#SKIP_INODE_CHECK=0
+
+#
 # Allow the specified hidden directory to be whitelisted.
 #
 # This option may be specified more than once, and may use wildcard characters.
 #
 # The default value is the null string.
 #
+{% if ansible_distribution == 'Debian' %}
+#ALLOWHIDDENDIR=/etc/.java
+#ALLOWHIDDENDIR=/etc/.git
+#ALLOWHIDDENDIR=/dev/.lxc
+{% else %}
 #ALLOWHIDDENDIR=/etc/.java
 #ALLOWHIDDENDIR=/dev/.udev
 #ALLOWHIDDENDIR=/dev/.udevdb
@@ -639,6 +688,7 @@ ALLOWHIDDENDIR=/dev/.mount
 # for etckeeper
 ALLOWHIDDENDIR=/etc/.git
 ALLOWHIDDENDIR=/etc/.bzr
+{% endif %}
 
 #
 # Allow the specified hidden file to be whitelisted.
@@ -647,6 +697,20 @@ ALLOWHIDDENDIR=/etc/.bzr
 #
 # The default value is the null string.
 # 
+{% if ansible_distribution == 'Debian' %}
+#ALLOWHIDDENFILE=/usr/share/man/man1/..1.gz
+#ALLOWHIDDENFILE=/usr/bin/.fipscheck.hmac
+#ALLOWHIDDENFILE=/usr/bin/.ssh.hmac
+#ALLOWHIDDENFILE=/usr/lib/.libfipscheck.so.1.1.0.hmac
+#ALLOWHIDDENFILE=/usr/lib/hmaccalc/sha1hmac.hmac
+#ALLOWHIDDENFILE=/usr/lib/hmaccalc/sha256hmac.hmac
+#ALLOWHIDDENFILE=/usr/sbin/.sshd.hmac
+#ALLOWHIDDENFILE=/usr/share/man/man5/.k5login.5.gz
+#ALLOWHIDDENFILE=/usr/share/man/man5/.k5identity.5.gz
+#ALLOWHIDDENFILE=/etc/.gitignore
+#ALLOWHIDDENFILE=/etc/.bzrignore
+#ALLOWHIDDENFILE=/etc/.etckeeper
+{% else %}
 #ALLOWHIDDENFILE=/usr/share/man/man1/..1.gz
 #ALLOWHIDDENFILE=/usr/bin/.fipscheck.hmac
 #ALLOWHIDDENFILE=/usr/bin/.ssh.hmac
@@ -680,16 +744,25 @@ ALLOWHIDDENFILE=/etc/.gitignore
 ALLOWHIDDENFILE=/etc/.bzrignore
 # systemd
 ALLOWHIDDENFILE=/etc/.updated
+{% endif %}
 
 #
 # Allow the specified process to use deleted files. The process name may be
-# followed by a colon-separated list of full pathnames. The process will then
-# only be whitelisted if it is using one of the given files. For example:
+# followed by a colon-separated list of full pathnames (which have been
+# deleted). The process will then only be whitelisted if it is using one of
+# the given pathnames. For example:
 #
 #     ALLOWPROCDELFILE=/usr/libexec/gconfd-2:/tmp/abc:/var/tmp/xyz
 #
 # This option may be specified more than once. It may also use wildcards, but
-# only in the file names.
+# only in the deleted file pathnames, not in the process name. The use of
+# extended pattern matching in pathname expansion (for example, '**') is not
+# supported for this option. However, the option itself extends globbing when
+# the '*' character is used by matching zero or more characters in the
+# pathname, including those in sub-directories. For example, the pathname
+# '/tmp/abc/def/xyz' would not be matched by shell globbing using '/tmp/*/xyz'
+# but is matched when used in this option. Similarly, using '/tmp/*' will
+# match any file found in the '/tmp' directory or any sub-directories.
 #
 # The default value is the null string.
 #
@@ -739,6 +812,10 @@ ALLOWHIDDENFILE=/etc/.updated
 #
 # The default value is the null string.
 #
+{% if ansible_distribution == 'Debian' %}
+#ALLOWDEVFILE=/dev/shm/pulse-shm-*
+#ALLOWDEVFILE=/dev/shm/sem.ADBE_*
+{% else %}
 #ALLOWDEVFILE=/dev/shm/pulse-shm-*
 #ALLOWDEVFILE=/dev/shm/sem.ADBE_*
 ALLOWDEVFILE=/dev/shm/pulse-shm-*
@@ -755,6 +832,64 @@ ALLOWDEVFILE="/dev/md/autorebuild.pid"
 ALLOWDEVFILE=/dev/shm/sem.slapd-*.stats
 # squid proxy
 ALLOWDEVFILE=/dev/shm/squid-cf*
+# squid ssl cache
+ALLOWDEVFILE=/dev/shm/squid-ssl_session_cache.shm
+# allow lldpad state file
+ALLOWDEVFILE=/dev/shm/lldpad.state
+# Allow PCS/Pacemaker/Corosync
+ALLOWDEVFILE=/dev/shm/qb-attrd-*
+ALLOWDEVFILE=/dev/shm/qb-cfg-*
+ALLOWDEVFILE=/dev/shm/qb-cib_rw-*
+ALLOWDEVFILE=/dev/shm/qb-cib_shm-*
+ALLOWDEVFILE=/dev/shm/qb-corosync-*
+ALLOWDEVFILE=/dev/shm/qb-cpg-*
+ALLOWDEVFILE=/dev/shm/qb-lrmd-*
+ALLOWDEVFILE=/dev/shm/qb-pengine-*
+ALLOWDEVFILE=/dev/shm/qb-quorum-*
+ALLOWDEVFILE=/dev/shm/qb-stonith-*
+# Allow podman
+ALLOWDEVFILE=/dev/shm/libpod*lock*
+{% endif %}
+
+#
+# Allow the specified process pathnames to use shared memory segments.
+#
+# This option may be specified more than once, and may use wildcard characters.
+#
+# The default value is the null string.
+#
+#ALLOWIPCPROC=/usr/bin/firefox
+#ALLOWIPCPROC=/usr/bin/vlc
+
+#
+# Allow the specified memory segment creator PIDs to use shared memory segments.
+#
+# This is a space-separated list of PID numbers (as given by the
+# 'ipcs -p' command). This option may be specified more than once.
+#
+# The default value is the null string.
+#
+#ALLOWIPCPID=12345 6789
+
+#
+# Allow the specified account names to use shared memory segments.
+#
+# This is a space-separated list of account names. The option may be specified
+# more than once.
+#
+# The default value is the null string.
+#
+#ALLOWIPCUSER=usera userb
+
+#
+# This option can be used to set the maximum shared memory segment size
+# (in bytes) that is not considered suspicious. Any segment above this size,
+# and with 600 or 666 permissions, will be considered suspicious during the
+# shared memory check.
+#
+# The default is 1048576 (1M) bytes.
+#
+#IPC_SEG_SIZE=1048576
 
 #
 # This option is used to indicate if the Phalanx2 test is to perform a basic
@@ -826,9 +961,9 @@ ALLOWDEVFILE=/dev/shm/squid-cf*
 
 #
 # This option tells rkhunter the local system startup file pathnames. The
-# directories will be searched for files. By default rkhunter will try and
-# determine were the startup files are located. If the option is set to 'NONE',
-# then certain tests will be skipped.
+# directories will be searched for files. If unset, then rkhunter will try
+# and determine were the startup files are located. If the option is set to
+# 'NONE' then certain tests will be skipped.
 #
 # This is a space-separated list of file and directory pathnames. The option
 # may be specified more than once, and may use wildcard characters.
@@ -839,9 +974,9 @@ ALLOWDEVFILE=/dev/shm/squid-cf*
 
 #
 # This option tells rkhunter the pathname to the file containing the user
-# account passwords. This setting will be worked out by rkhunter, and so
-# should not usually need to be set. Users of TCB shadow files should not
-# set this option.
+# account passwords. If unset, this setting will be worked out by rkhunter,
+# and so should not usually need to be set. Users of TCB shadow files should
+# not set this option.
 #
 # This option has no default value.
 #
@@ -875,9 +1010,10 @@ ALLOWDEVFILE=/dev/shm/squid-cf*
 
 #
 # This option tells rkhunter the pathname to the syslog configuration file.
-# This setting will be worked out by rkhunter, and so should not usually need
-# to be set. A value of 'NONE' can be used to indicate that there is no
-# configuration file, but that the syslog daemon process may be running.
+# If unset, this setting will be worked out by rkhunter, and so should not
+# usually need to be set. A value of 'NONE' can be used to indicate that
+# there is no configuration file, but that the syslog daemon process may
+# be running.
 #
 # This is a space-separated list of pathnames. The option may be specified
 # more than once.
@@ -946,7 +1082,7 @@ ALLOWDEVFILE=/dev/shm/squid-cf*
 #
 # The default value is '1024000'.
 #
-#SUSPSCAN_MAXSIZE=10240000
+#SUSPSCAN_MAXSIZE=1024000
 
 #
 # This option specifies the 'suspscan' test score threshold. Below this value
@@ -955,6 +1091,18 @@ ALLOWDEVFILE=/dev/shm/squid-cf*
 # The default value is '200'.
 #
 #SUSPSCAN_THRESH=200
+
+#
+# This option may be used to whitelist file pathnames from the suspscan test.
+#
+# Shell globbing may be used in the pathname. Also see the GLOBSTAR configuration
+# option.
+#
+# This option may be specified more than once.
+#
+# The default value is the null string.
+#
+#SUSPSCAN_WHITELIST=""
 
 #
 # The following options can be used to whitelist network ports which are known
@@ -1015,7 +1163,7 @@ ALLOWDEVFILE=/dev/shm/squid-cf*
 #
 # Also see the WARN_ON_OS_CHANGE and UPDT_ON_OS_CHANGE options.
 #
-#OS_VERSION_FILE=/etc/release
+#OS_VERSION_FILE=/etc/os-release
 
 #
 # Set the following option to '0' if you do not want to receive a warning if any
@@ -1076,6 +1224,10 @@ ALLOWDEVFILE=/dev/shm/squid-cf*
 #
 # For both options the default value is the null string.
 #
+{% if ansible_distribution == 'Debian' %}
+#RTKT_DIR_WHITELIST=""
+#RTKT_FILE_WHITELIST=""
+{% else %}
 #RTKT_DIR_WHITELIST=""
 #RTKT_FILE_WHITELIST=""
 RTKT_FILE_WHITELIST=/bin/ad
@@ -1083,6 +1235,7 @@ RTKT_FILE_WHITELIST=/bin/ad
 RTKT_FILE_WHITELIST=/var/log/pki-ca/system
 # FreeIPA Certificate Authority
 RTKT_FILE_WHITELIST=/var/log/pki/pki-tomcat/ca/system
+{% endif %}
 
 #
 # The following option can be used to whitelist shared library files that would
@@ -1131,8 +1284,8 @@ RTKT_FILE_WHITELIST=/var/log/pki/pki-tomcat/ca/system
 
 #
 # This setting tells rkhunter the directory containing the available Linux
-# kernel modules. This setting will be worked out by rkhunter, and so should
-# not usually need to be set.
+# kernel modules. If unset, this setting will be worked out by rkhunter, and
+# so should not usually need to be set.
 #
 # This option has no default value.
 #
@@ -1169,16 +1322,31 @@ RTKT_FILE_WHITELIST=/var/log/pki/pki-tomcat/ca/system
 # The lock is set just before logging starts, and is removed when the program
 # ends. It is used to prevent items such as the log file, and the file
 # properties file, from becoming corrupted if rkhunter is running more than
-# once. The mechanism used is to simply create a lock file in the TMPDIR
+# once. The mechanism used is to simply create a lock file in the LOCKDIR
 # directory. If the lock file already exists, because rkhunter is already
 # running, then the current process simply loops around sleeping for 10 seconds
 # and then retrying the lock. A value of '0' means not to use locking.
 #
 # The default value is '0'.
 #
-# Also see the LOCK_TIMEOUT and SHOW_LOCK_MSGS options.
+# Also see the LOCKDIR, LOCK_TIMEOUT and SHOW_LOCK_MSGS options.
 #
 #USE_LOCKING=0
+
+#
+# This option specifies the directory to be used when locking is enabled.
+# If the option is unset, then the directory to be used will be worked out
+# by rkhunter. In that instance the directories '/run/lock', '/var/lock',
+# '/var/run/lock', '/run' and '/var/run' will be checked in turn. If none
+# of those can be found, or are not read/writeable, then the TMPDIR directory
+# will be used.
+#
+# To avoid the lock file persisting across a server reboot, the directory
+# used should be memory-resident.
+#
+# This option has no default value.
+#
+#LOCKDIR=""
 
 #
 # If locking is used, then rkhunter may have to wait to get the lock file.
@@ -1246,20 +1414,6 @@ RTKT_FILE_WHITELIST=/var/log/pki/pki-tomcat/ca/system
 #UNHIDETCP_OPTS=""
 
 #
-# If both the C 'unhide', and Ruby 'unhide.rb', programs exist on the system,
-# then it is possible to disable the execution of one of the programs if
-# desired. By default rkhunter will look for both programs, and execute each
-# of them as they are found. If the value of this option is '0', then both
-# programs will be executed if they are present. A value of '1' will disable
-# execution of the C 'unhide' program, and a value of '2' will disable the Ruby
-# 'unhide.rb' program. To disable both programs, then disable the
-# 'hidden_procs' test.
-#
-# The default value is '0'.
-#
-#DISABLE_UNHIDE=0
-
-#
 # This option can be set to either '0' or '1'. If set to '1' then the summary,
 # shown after rkhunter has run, will display the actual number of warnings
 # found. If it is set to '0', then the summary will simply indicate that
@@ -1301,5 +1455,25 @@ RTKT_FILE_WHITELIST=/var/log/pki/pki-tomcat/ca/system
 #
 #EMPTY_LOGFILES=""
 #MISSING_LOGFILES=""
+
+#
+# This option can be set to either '0' or '1'. If set to '1' then the globbing
+# characters '**' can be used to allow the recursive checking of directories.
+# This can be useful, for example, with the USER_FILEPROP_FILES_DIRS option.
+# For example:
+#
+#	USER_FILEPROP_FILES_DIRS=/etc/**/*.conf
+#
+# This will check all '.conf' files within the '/etc' directory, and any
+# sub-directories (at any level). If GLOBSTAR is not set, then the shell will
+# interpret '**' as '*' and only one level of sub-directories will be checked.
+#
+# NOTE: This option is only valid for those shells which support the 'globstar'
+# option. Typically this will be 'bash' (version 4 and above) via the 'shopt' command,
+# and 'ksh' via the 'set' command.
+#
+# The default value is '0'.
+#
+#GLOBSTAR=0
 
 INSTALLDIR="/usr"

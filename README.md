@@ -8,9 +8,10 @@ Ansible role to install and configure Rootkit Hunter.
 
 Requirements
 ------------
-* OS support list:  
-  * CentOS/RHEL 7
-  * Debian Stretch
+* OS support list:
+  * CentOS/RHEL 7 and 8
+  * Debian Stretch and Buster
+  * Fedora 33
 * ansible >= 2.0
 
 Installation
@@ -30,10 +31,17 @@ Example Playbook
 Role Variables
 --------------
 Some variables that require review:
-- `rkhunter_report_mail_address`: "root@localhost"  
-- `rkhunter_diag_scan`: "no"   
-Set this variable to "no" in order to perform normal report scan or to "yes" in order to perform detailed report scan (including application check)
-- `rkhunter_allow_ssh_protocol_v1`: 0   
-A value of '0' indicates that the use of SSH-1 is not allowed. Set this option to '1' to allow the use of the SSH-1 protocol. If the 'Protocol' option has not been set in the SSH configuration file, then a value of '2' may be set here in order to suppress a warning message.
-- `rkhunter_allow_ssh_root_login`: "no"   
-The following option is checked against the SSH configuration file 'PermitRootLogin' option. A warning will be displayed if they do not match. However, if a value has not been set in the SSH configuration file, then a value here of 'unset' can be used to avoid warning messages.
+- `rkhunter_report_mail_address`: "root@localhost"
+- `rkhunter_diag_scan`: "no"
+Set this variable to "no" in order to perform normal report scan or to "yes" in order to
+perform detailed report scan (including application check)
+- `rkhunter_allow_ssh_protocol_v1`: 2
+A value of '0' indicates that the use of SSH-1 is not allowed. Set this option to '1' to
+allow the use of the SSH-1 protocol. If the 'Protocol' option has not been set in the
+SSH configuration file, then a value of '2' may be set here in order to suppress
+a warning message (which is the case in most modern distributions).
+- `rkhunter_allow_ssh_root_login`: "prohibit-password"
+The following option is checked against the SSH configuration file 'PermitRootLogin'
+option. A warning will be displayed if they do not match. However, if a value has not
+been set in the SSH configuration file, then a value here of 'unset' can be used to
+avoid warning messages.

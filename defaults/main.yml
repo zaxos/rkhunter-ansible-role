@@ -3,8 +3,8 @@
 
 rkhunter_report_mail_address: "root@localhost"
 rkhunter_diag_scan: "no"
-rkhunter_allow_ssh_protocol_v1: 0
-rkhunter_allow_ssh_root_login: "no"
+rkhunter_allow_ssh_protocol_v1: 2
+rkhunter_allow_ssh_root_login: "prohibit-password"
 
 rkhunter_warning_mail_address: "\"\""
 rkhunter_send_mail_command: "mail -s \"[rkhunter] Warnings found for ${HOST_NAME}\""
@@ -12,6 +12,15 @@ rkhunter_rotate_mirrors: 1
 rkhunter_update_mirrors: 1
 rkhunter_mirrors_mode: 0
 rkhunter_append_log: 1
+rkhunter_update_languages: ""
 
-epel_url: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm"
-epel_key: "/etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7"
+epel_url: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version}}.noarch.rpm"
+epel_key: "/etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version}}"
+
+# default values for in /etc/default/rkhunter on Debian
+rkhunter_debian_daily_cronjob: false
+rkhunter_debian_daily_db_update: false
+rkhunter_debian_update_email: false
+rkhunter_debian_apt_autogen: false
+rkunter_debian_nice: 0
+rkhunter_debian_battery: false

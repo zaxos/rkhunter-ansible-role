@@ -7,13 +7,18 @@ galaxy_info:
   min_ansible_version: 2.0
 
   platforms:
-  - name: EL
-    versions:
-    - 7
-  - name: Debian
-    versions:
-    - stretch
+    - name: EL
+      versions:
+        - 7
+        - 8
+    - name: Debian
+      versions:
+        - stretch
+        - buster
+    - name: Fedora
+      versions:
+        - 33
 
-  galaxy_tags: [rootkit,hunter,security]
+  galaxy_tags: [rootkit, hunter, security]
 
 dependencies: []
