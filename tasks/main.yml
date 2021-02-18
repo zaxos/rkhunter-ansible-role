@@ -35,10 +35,7 @@
 - name: rkhunter update
   command:
     cmd: rkhunter --update
-    creates:
-      - /var/lib/rkhunter/db/programs_bad.dat
-      - /var/lib/rkhunter/db/mirrors.dat
-      - /var/lib/rkhunter/db/suspscan.dat
+    creates: /var/lib/rkhunter/db/programs_bad.dat
   register: rkhunter_update
   failed_when: rkhunter_update.rc != 2 and rkhunter_update.rc != 0
   changed_when: false
@@ -46,6 +43,5 @@
 - name: rkhunter propupd
   command:
     cmd: rkhunter --propupd
-    creates:
-      - /var/lib/rkhunter/db/rkhunter.dat
+    creates: /var/lib/rkhunter/db/rkhunter.dat
   changed_when: false
