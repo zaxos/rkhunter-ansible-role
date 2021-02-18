@@ -13,5 +13,5 @@ rkhunter_update_mirrors: 1
 rkhunter_mirrors_mode: 0
 rkhunter_append_log: 1
 
-epel_url: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm"
-epel_key: "/etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7"
+epel_url: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version}}.noarch.rpm"
+epel_key: "/etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version}}"
