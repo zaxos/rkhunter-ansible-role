@@ -30,11 +30,18 @@
   when: ansible_os_family == "Debian"
 
 - name: rkhunter update
-  command: rkhunter --update
+  command: 
+    cmd: rkhunter --update
   register: rkhunter_update
   failed_when: rkhunter_update.rc != 2 and rkhunter_update.rc != 0
   changed_when: False
+  creates:
+    - /var/lib/rkhunter/db/programs_bad.dat
+    - /var/lib/rkhunter/db/mirrors.dat
+    - /var/lib/rkhunter/db/suspscan.dat
 
 - name: rkhunter propupd
-  command: rkhunter --propupd
+  command: 
+    cmd: rkhunter --propupd
   changed_when: False
+  creates: /var/lib/rkhunter/db/rkhunter.dat
